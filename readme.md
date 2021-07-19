@@ -1,78 +1,21 @@
 # unicode-properties
 
-Provides fast access to unicode character properties. Uses [unicode-trie](https://github.com/devongovett/unicode-trie) to compress the 
-properties for all code points into just 9.5KB. Currently, unicode-properties supports Unicode version 12.
+Provides efficient lookup of a subset of Unicode properties for the
+[DomTerm terminal emulator](https://domterm.org) terminal emulator.
+Specifically, the following are encoded in a compact table:
 
-## Usage
+* Properties needed for determining extended grapheme clusters.
 
-    npm install unicode-properties
+* Determination of double-width characters (EastAsianWidth).
 
-```javascript
-var unicode = require('unicode-properties');
+* Determination of special characters that should be force to single-width
+even though they may not be available in stndard monospace fonts.
+Specifically, this applies to Braille characters, which are
+sometimes used for graphics.
 
-unicode.getCategory('2'.charCodeAt()) //=> 'Nd'
-unicode.getNumericValue('2'.charCodeAt()) //=> 2
-```
+More properties could be easily supported as long as they can fit in a 32-bit integer - see `generate_data.mjs`.
 
-## API
+Uses [unicode-trie](https://github.com/devongovett/unicode-trie) to compress
+the properties for all code points.
+Also loosely based on [grapheme-breaker-mjs](https://github.com/taisukef/grapheme-breaker-mjs) and [Devon Dovett's unicode-properties]((https://github.com/foliojs/unicode-properties).
 
-### getCategory(codePoint)
-
-Returns the unicode [general category](http://www.fileformat.info/info/unicode/category/index.htm) for the given code point.
-
-### getScript(codePoint)
-
-Returns the [script](http://unicode.org/standard/supported.html) for the given code point.
-
-### getCombiningClass(codePoint)
-
-Returns the [canonical combining class](http://unicode.org/glossary/#combining_class) for the given code point.
-
-### getEastAsianWidth(codePoint)
-
-Returns the [East Asian width](http://www.unicode.org/reports/tr11/tr11-28.html) for the given code point.
-
-### getNumericValue(codePoint)
-
-Returns the numeric value for the given code point, or null if there is no numeric value for that code point.
-
-### isAlphabetic(codePoint)
-
-Returns whether the code point is an alphabetic character.
-
-### isDigit(codePoint)
-
-Returns whether the code point is a digit.
-
-### isPunctuation(codePoint)
-
-Returns whether the code point is a punctuation character.
-
-### isLowerCase(codePoint)
-
-Returns whether the code point is lower case.
-
-### isUpperCase(codePoint)
-
-Returns whether the code point is upper case.
-
-### isTitleCase(codePoint)
-
-Returns whether the code point is title case.
-
-### isWhiteSpace(codePoint)
-
-Returns whether the code point is whitespace: specifically, whether the category is one of Zs, Zl, or Zp.
-
-### isBaseForm(codePoint)
-
-Returns whether the code point is a base form. A code point of base form does not graphically combine with preceding
-characters.
-
-### isMark(codePoint)
-
-Returns whether the code point is a mark character (e.g. accent).
-
-## License
-
-MIT

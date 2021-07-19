@@ -1,8 +1,2 @@
-data.json
-data.trie
-trie.json
-.DS_Store
-node_modules/
-dist/
-unicode-properties.*.js
-*.map
+data/*.txt
+uc-properties.js

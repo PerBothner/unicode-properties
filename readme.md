@@ -26,7 +26,6 @@ These are all EcmaScript modules.
 The file `uc-properties.js` is generated ahead-of-time using `node`;
 see the `Makefile` for the needed commands.
 
-Uses Devon Dovett's [unicode-trie](https://github.com/devongovett/unicode-trie) to compress the properties for all code points,
+Uses Devon Govett's [unicode-trie](https://github.com/devongovett/unicode-trie) to compress the properties for all code points,
 and [tiny-inflate](https://github.com/foliojs/tiny-inflate) to uncompress.
 Also partly based on [grapheme-breaker-mjs](https://github.com/taisukef/grapheme-breaker-mjs) and [unicode-properties](https://github.com/foliojs/unicode-properties).
-

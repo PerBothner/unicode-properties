@@ -20,7 +20,7 @@ Just add them to  `properties.mjs` and enhance `generate_data.mjs` as needed.
 The file `properties.mjs` defines the API.
 A client (browser or node) needs `uc-properties.js` (generated),
 along with the library files `unicode-trie/index.mjs`,
-`uncode-trie/swap.mjs`, and `tiny-inflate/index.mjs`.
+`unicode-trie/swap.mjs`, and `tiny-inflate/index.mjs`.
 These are all EcmaScript modules.
 
 The file `uc-properties.js` is generated ahead-of-time using `node`;
@@ -28,5 +28,5 @@ see the `Makefile` for the needed commands.
 
 Uses Devon Dovett's [unicode-trie](https://github.com/devongovett/unicode-trie) to compress the properties for all code points,
 and [tiny-inflate](https://github.com/foliojs/tiny-inflate) to uncompress.
-Also loosely based on [grapheme-breaker-mjs](https://github.com/taisukef/grapheme-breaker-mjs) and [unicode-properties](https://github.com/foliojs/unicode-properties).
+Also partly based on [grapheme-breaker-mjs](https://github.com/taisukef/grapheme-breaker-mjs) and [unicode-properties](https://github.com/foliojs/unicode-properties).
 

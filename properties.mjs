@@ -69,6 +69,20 @@ function columnToIndexInContext(str, startIndex, column, preferWide) {
 function shouldJoin(beforeState, afterInfo) {
     let beforeCode = beforeState >= 0 ? beforeState : -beforeState;
     let afterCode = (afterInfo & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
+    if (afterCode == GRAPHEME_BREAK_Regional_Indicator) // GB12, GB13
+        return beforeState == GRAPHEME_BREAK_SAW_Regional ? afterCode
+        : GRAPHEME_BREAK_SAW_Regional;
+    return _shouldJoin(beforeCode, afterCode) ? afterCode : -afterCode;
+}
+function shouldJoinBackwards(beforeInfo, afterState) {
+    let afterCode = afterState >= 0 ? afterState : -afterState;
+    let beforeCode = (beforeInfo & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
+    if (beforeCode == GRAPHEME_BREAK_Regional_Indicator) // GB12, GB13
+        return afterState == GRAPHEME_BREAK_SAW_Regional ? beforeCode
+        : GRAPHEME_BREAK_SAW_Regional;
+    return _shouldJoin(beforeCode, afterCode) ? beforeCode : -beforeCode;
+}
+function _shouldJoin(beforeCode, afterCode) {
     if (beforeCode >= GRAPHEME_BREAK_Hangul_L
         && beforeCode <= GRAPHEME_BREAK_Hangul_LVT) {
         if (beforeCode == GRAPHEME_BREAK_Hangul_L // GB6
@@ -76,28 +90,25 @@ function shouldJoin(beforeState, afterInfo) {
                 || afterCode == GRAPHEME_BREAK_Hangul_V
                 || afterCode == GRAPHEME_BREAK_Hangul_LV
                 || afterCode == GRAPHEME_BREAK_Hangul_LVT))
-            return afterCode;
+            return true;
         if ((beforeCode == GRAPHEME_BREAK_Hangul_LV // GB7
              || beforeCode == GRAPHEME_BREAK_Hangul_V)
             && (afterCode == GRAPHEME_BREAK_Hangul_V
                 || afterCode == GRAPHEME_BREAK_Hangul_T))
-            return afterCode;
+            return true;
         if ((beforeCode == GRAPHEME_BREAK_Hangul_LVT // GB8
              || beforeCode == GRAPHEME_BREAK_Hangul_T)
             && afterCode == GRAPHEME_BREAK_Hangul_T)
-            return afterCode;
+            return true;
     }
     if (afterCode == GRAPHEME_BREAK_Extend // GB9
         || afterCode == GRAPHEME_BREAK_ZWJ
         || afterCode == GRAPHEME_BREAK_SpacingMark) // GB9b
-        return afterCode;
+        return true;
     if (beforeCode == GRAPHEME_BREAK_ZWJ // GB11
         && afterCode == GRAPHEME_BREAK_ExtPic)
-        return afterCode;
-    if (afterCode == GRAPHEME_BREAK_Regional_Indicator) // GB12, GB13
-        return beforeState == GRAPHEME_BREAK_SAW_Regional ? afterCode
-        : GRAPHEME_BREAK_SAW_Regional;
-    return -afterCode;
+        return true;
+    return false;
 }
 
 const getInfo = typeof trieData === "undefined" ? undefined
@@ -127,6 +138,7 @@ export {
     infoToWidthInfo,
     infoToWidth,
     shouldJoin,
+    shouldJoinBackwards,
     getInfo,
     strWidth,
     columnToIndexInContext

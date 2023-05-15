@@ -1,0 +1,5 @@
+375c375
+< module.exports = tinf_uncompress;
+---
+> export default tinf_uncompress
+\ No newline at end of file

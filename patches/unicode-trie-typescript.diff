@@ -1,0 +1,59 @@
+1,3c1
+< import inflate from '../tiny-inflate/index.mjs'
+< import swap from './swap.mjs'
+< const swap32LE = swap.swap32LE
+---
+> import inflate from './tiny-inflate'
+67,69c65
+< class UnicodeTrie {
+<   constructor(data) {
+<     const isBuffer = (typeof data.readUInt32BE === 'function') && (typeof data.slice === 'function');
+---
+> const isBigEndian = (new Uint8Array(new Uint32Array([0x12345678]).buffer)[0] === 0x12);
+71c67,71
+<     if (isBuffer || data instanceof Uint8Array) {
+---
+> class UnicodeTrie {
+>     private data: Uint32Array;
+>     private highStart: number;
+>     private errorValue: number;
+>   constructor(data: Uint8Array) {
+73,79c73
+<       let uncompressedLength;
+<       if (isBuffer) {
+<         this.highStart = data.readUInt32LE(0);
+<         this.errorValue = data.readUInt32LE(4);
+<         uncompressedLength = data.readUInt32LE(8);
+<         data = data.slice(12);
+<       } else {
+---
+>       
+83c77
+<         uncompressedLength = view.getUint32(8, true);
+---
+>         let uncompressedLength = view.getUint32(8, true);
+85d78
+<       }
+91,92c84,93
+<       // swap bytes from little-endian
+<       swap32LE(data);
+---
+>       if (isBigEndian) {
+>           // swap bytes from little-endian
+>           const len = data.length;
+>           for (let i = 0; i < len; i += 4) {
+>               // Exchange data[i] and data[i + 3]:
+>               let x = data[i]; data[i] = data[i+3]; data[i+3] = x;
+>               // Exchange data[i + 1] and data[i + 2]:
+>               let y = data[i+1]; data[i+1] = data[i+2]; data[i+2] = y;
+>           }
+>       }
+96,99d96
+<     } else {
+<       // pre-parsed data
+<       ({ data: this.data, highStart: this.highStart, errorValue: this.errorValue } = data);
+<     }
+102c99
+<   get(codePoint) {
+---
+>     get(codePoint: number): number {

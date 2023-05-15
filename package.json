@@ -1,0 +1,11 @@
+{
+  "name": "unicode-properties",
+  "dependencies": {
+    "pako": "^0.2.5",
+    "tiny-inflate": "^1.0.0",
+    "unicode-trie": "^2.0.0"
+  },
+  "scripts": {
+      "ts-properties": "node generate_data.mjs --typescript"
+  }
+}

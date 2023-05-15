@@ -1,2 +1,4 @@
 data/*.txt
 uc-properties.js
+out-dirs.stamp
+*~

@@ -1,0 +1,10 @@
+23c23
+< module.exports = {
+---
+> const exports = {
+25c25,27
+< };
+---
+> }
+> export default exports
+> 

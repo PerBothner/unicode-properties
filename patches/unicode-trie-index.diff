@@ -1,0 +1,12 @@
+1,2c1,3
+< const inflate = require('tiny-inflate');
+< const { swap32LE } = require('./swap');
+---
+> import inflate from '../tiny-inflate/index.mjs'
+> import swap from './swap.mjs'
+> const swap32LE = swap.swap32LE
+136c137
+< module.exports = UnicodeTrie;
+\ No newline at end of file
+---
+> export default UnicodeTrie

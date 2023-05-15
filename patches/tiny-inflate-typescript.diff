@@ -1,0 +1,92 @@
+4,19c4,24
+< function Tree() {
+<   this.table = new Uint16Array(16);   /* table of code length counts */
+<   this.trans = new Uint16Array(288);  /* code -> symbol translation table */
+< }
+< 
+< function Data(source, dest) {
+<   this.source = source;
+<   this.sourceIndex = 0;
+<   this.tag = 0;
+<   this.bitcount = 0;
+<   
+<   this.dest = dest;
+<   this.destLen = 0;
+<   
+<   this.ltree = new Tree();  /* dynamic length/symbol tree */
+<   this.dtree = new Tree();  /* dynamic distance tree */
+---
+> class Tree {
+>   table = new Uint16Array(16);   /* table of code length counts */
+>   trans = new Uint16Array(288);  /* code -> symbol translation table */
+> };
+> 
+> class Data {
+>   tag: number = 0;
+>   bitcount: number = 0;
+>   destLen: number = 0;
+>   ltree: Tree;
+>   dtree: Tree;
+>   source: Uint8Array;
+>   dest: Uint8Array;
+>   sourceIndex: number = 0;
+> 
+>   constructor(source: Uint8Array, dest: Uint8Array) {
+>     this.source = source;
+>     this.dest = dest;
+>     this.ltree = new Tree();  /* dynamic length/symbol tree */
+>     this.dtree = new Tree();  /* dynamic distance tree */
+>   }
+45,46c50,51
+< var code_tree = new Tree();
+< var lengths = new Uint8Array(288 + 32);
+---
+> const code_tree = new Tree();
+> const lengths = new Uint8Array(288 + 32);
+53c58
+< function tinf_build_bits_base(bits, base, delta, first) {
+---
+> function tinf_build_bits_base(bits: Uint8Array, base: Uint16Array, delta: number, first: number): void {
+68c73
+< function tinf_build_fixed_trees(lt, dt) {
+---
+> function tinf_build_fixed_trees(lt: Tree, dt: Tree): void {
+94c99
+< function tinf_build_tree(t, lengths, off, num) {
+---
+> function tinf_build_tree(t: Tree, lengths: Uint8Array, off: number, num: number): void {
+122c127
+< function tinf_getbit(d) {
+---
+> function tinf_getbit(d: Data): number {
+138c143
+< function tinf_read_bits(d, num, base) {
+---
+> function tinf_read_bits(d: Data, num: number, base: number): number {
+154c159
+< function tinf_decode_symbol(d, t) {
+---
+> function tinf_decode_symbol(d: Data, t: Tree): number {
+180c185
+< function tinf_decode_trees(d, lt, dt) {
+---
+> function tinf_decode_trees(d: Data, lt: Tree, dt: Tree): void {
+246,247c251,252
+< function tinf_inflate_block_data(d, lt, dt) {
+<   while (1) {
+---
+> function tinf_inflate_block_data(d: Data, lt: Tree, dt: Tree): number {
+>   for (;;) {
+280c285
+< function tinf_inflate_uncompressed_block(d) {
+---
+> function tinf_inflate_uncompressed_block(d: Data) {
+315c320
+< function tinf_uncompress(source, dest) {
+---
+> function tinf_uncompress(source: Uint8Array, dest: Uint8Array) {
+375c380
+< export default tinf_uncompress
+\ No newline at end of file
+---
+> export default tinf_uncompress

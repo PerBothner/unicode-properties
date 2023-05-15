@@ -1,7 +1,11 @@
-import fs from 'fs'
+const fs = require('fs');
+//import fs from 'fs'
 //import fetch from 'node-fetch'
-import UnicodeTrieBuilder from 'unicode-trie/builder.js'
-import * as UP from './properties.mjs'
+//import { UnicodeTrieBuilder } from 'unicode-trie/builder.js'
+//const UnicodeTrie = require('unicode-trie')
+const UnicodeTrieBuilder = require('unicode-trie/builder.js')
+//import * as UP from './properties.js'
+//const UP = require('./uc-constants.js');
 
 /*
 //const s = "F2139          ; Extended_Pictographic# E0.6   [1] (ℹ️)       information"
@@ -13,22 +17,32 @@ process.exit(0)
 */
 
 const main = async function() {
-  const UNICODE_VERSION = '13.0.0'
+    const maxChar = 0x10ffff;
+    const wbuffer = new Uint8Array(maxChar+1);
+    let match;
+    let properties_logic = fs.readFileSync('src/uc-logic.ts');
+    UP = {};
 
-  const maxChar = 0x10ffff;
-  const wbuffer = new Uint8Array(maxChar+1);
+    // Extract constants from uc-logic.ts
+    const constant_re = /^export const ([a-zA-Z0-9_]+) = ([-0-9]+);/gm;
+    match = null;
+    while (match = constant_re.exec(properties_logic)) {
+        const name = match[1];
+        const value = parseInt(match[2], 10);
+        UP[name] = value;
+    }
+    console.log("main started read UP:"+JSON.stringify(UP));
 
   // collect entries in the table into ranges to keep things smaller.
   {
-    // const url = `https://www.unicode.org/Public/${UNICODE_VERSION}/ucd/auxiliary/GraphemeBreakProperty.txt`
     //const data = await (await fetch(url)).text()
     const path = 'data/GraphemeBreakProperty.txt';
     const data = fs.readFileSync(path, 'ascii');
-    let match = null
+    match = null
     const re = /^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*([A-Za-z_]+)/gm
     while (match = re.exec(data)) {
       const start = parseInt(match[1], 16);
-        const end = match[2] ? parseInt(match[2], 16) : start
+      const end = match[2] ? parseInt(match[2], 16) : start
       const type = match[3]
       let value = -1;
       switch (type) {
@@ -49,7 +63,7 @@ const main = async function() {
           for (let i = start; i <= end; i++) {
               wbuffer[i] = value | (wbuffer[i] & ~UP.GRAPHEME_BREAK_MASK);
           }
-      }
+        }
     }
   }
   {
@@ -96,6 +110,7 @@ const main = async function() {
   }
     const force_1_column = [
         0x2800, 0x28ff, // Braille
+        0x2AF7,  0x2AF8,
         0x1F1E6, 0x1F1FF
     ];
     {
@@ -119,11 +134,7 @@ const main = async function() {
             trie.setRange(start, i, value);
         }
   }
-  /*
-  const output = { trie: trie.toBuffer().toString('base64') }
-  // write the trie and classes to a file
-  fs.writeFileSync(`./classes-v${UNICODE_VERSION}.mjs`, 'export default ' + JSON.stringify(output))
- */
+  let emit_typescript = process.argv.length >= 2 && process.argv[2] === "--typescript";
     let outJs = `\
 import UnicodeTrie from './unicode-trie/index.mjs';
 const trieRaw = ${JSON.stringify(trie.toBuffer().toString('base64'))};
@@ -135,11 +146,13 @@ let _data = null;
     _data[i] = bin.charCodeAt(i);
 }
 const trieData = new UnicodeTrie(_data);
-${fs.readFileSync('./properties.mjs', 'ascii')}
-`;
+${properties_logic}`;
 //    let outJs = 'const trieRaw = ' + JSON.stringify(trie.toBuffer().toString('base64')) + ';';
-//    outJs += fs.readFileSync('./properties.js', 'ascii');
-    fs.writeFileSync('uc-properties.js', outJs);
+    //    outJs += fs.readFileSync('./properties.js', 'ascii');
+    if (! emit_typescript) // strip type specifiers
+        outJs = outJs.replaceAll(/([)a-zA-Z]): [a-z]+/g, "$1")
+        .replaceAll(/ as number/g, "");
+    fs.writeFileSync(emit_typescript ? 'out-ts/uc-properties.ts' : 'out/uc-properties.js', outJs);
 }
 
 main()

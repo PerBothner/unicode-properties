@@ -31,7 +31,7 @@ out-ts/tiny-inflate.ts: out/tiny-inflate/index.mjs patches/tiny-inflate-typescri
 	patch -o $@ $< patches/tiny-inflate-typescript.diff
 
 out-ts/unicode-trie.ts: out/unicode-trie/index.mjs patches/unicode-trie-typescript.diff
-	patch -o $@ $< patches/tiny-inflate-typescript.diff
+	patch -o $@ $< patches/unicode-trie-typescript.diff
 
 properties.js: properties.ts strip-types.mjs
 	$(NODE) strip-types.mjs properties.ts properties.js

@@ -31,7 +31,6 @@ const main = async function() {
         const value = parseInt(match[2], 10);
         UP[name] = value;
     }
-    console.log("main started read UP:"+JSON.stringify(UP));
 
   // collect entries in the table into ranges to keep things smaller.
   {

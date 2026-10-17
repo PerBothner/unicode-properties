@@ -18,7 +18,7 @@
 >     private highStart: number;
 >     private errorValue: number;
 >   constructor(data: Uint8Array) {
-73,79c73
+73,80c73,74
 <       let uncompressedLength;
 <       if (isBuffer) {
 <         this.highStart = data.readUInt32LE(0);
@@ -26,8 +26,10 @@
 <         uncompressedLength = data.readUInt32LE(8);
 <         data = data.slice(12);
 <       } else {
+<         const view = new DataView(data.buffer);
 ---
 >       
+>         const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
 83c77
 <         uncompressedLength = view.getUint32(8, true);
 ---

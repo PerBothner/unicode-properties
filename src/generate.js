@@ -107,6 +107,28 @@ const main = async function() {
           }
       }
   }
+  {
+      const path = 'data/DerivedCoreProperties.txt';
+      const data = fs.readFileSync(path, 'ascii');
+      let match = null;
+      const re = /^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*InCB\s*;\s*([A-Za-z_]+)/gm
+      while (match = re.exec(data)) {
+          const start = parseInt(match[1], 16);
+          const end = match[2] ? parseInt(match[2], 16) : start;
+          let value = -1;
+          switch (match[3]) {
+          case 'Linker': value = UP.INCB_Linker; break;
+          case 'Extend': value = UP.INCB_Extend; break;
+          case 'Consonant': value = UP.INCB_Consonant; break;
+          }
+          if (value >= 0) {
+              value = value << UP.INCB_SHIFT;
+              for (let i = start; i <= end; i++) {
+                  wbuffer[i] = value | (wbuffer[i] & ~UP.INCB_MASK);
+              }
+          }
+      }
+  }
     const force_1_column = [
         0x2800, 0x28ff, // Braille
         0x2AF7,  0x2AF8,

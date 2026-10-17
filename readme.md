@@ -5,7 +5,8 @@ with a focus on properties useful for terminals, such as the
 [DomTerm terminal emulator](https://domterm.org).
 Specifically, the following are encoded in a compact table:
 
-* Properties needed for determining extended grapheme clusters.
+* Properties needed for determining extended grapheme clusters
+(Grapheme_Cluster_Break, Extended_Pictographic, and Indic_Conjunct_Break).
 
 * Determination of double-width characters (EastAsianWidth).
 

@@ -2,6 +2,8 @@ export const GRAPHEME_BREAK_MASK = 0xF;
 export const GRAPHEME_BREAK_SHIFT = 0;
 export const CHARWIDTH_MASK = 0x30;
 export const CHARWIDTH_SHIFT = 4;
+export const INCB_MASK = 0xC0;
+export const INCB_SHIFT = 6;
 
 // Values for the GRAPHEME_BREAK property
 export const GRAPHEME_BREAK_Other = 0; // includes CR, LF, Control
@@ -28,6 +30,21 @@ export const GRAPHEME_BREAK_SAW_Regional_Pair = 32;
 // and fit in GRAPHEME_BREAK_MASK.)
 export const GRAPHEME_BREAK_ExtPic_Extend = 12;
 export const GRAPHEME_BREAK_ExtPic_ZWJ = 13;
+
+// Only used in the state returned from shouldJoin/shouldJoinBackwards,
+// for rule GB9c. GRAPHEME_BREAK_InCB_Linker is an InCB=Linker followed by
+// zero or more InCB=Extend; GRAPHEME_BREAK_InCB_Consonant is an InCB=Consonant
+// (which always has Grapheme_Cluster_Break=Other).
+// (Must be distinct from the GRAPHEME_BREAK_Xxx values above
+// and fit in GRAPHEME_BREAK_MASK.)
+export const GRAPHEME_BREAK_InCB_Linker = 14;
+export const GRAPHEME_BREAK_InCB_Consonant = 15;
+
+// Values for the Indic_Conjunct_Break (InCB) property
+export const INCB_None = 0;
+export const INCB_Linker = 1;
+export const INCB_Extend = 2;
+export const INCB_Consonant = 3;
 
 export const CHARWIDTH_NORMAL = 0;
 export const CHARWIDTH_FORCE_1COLUMN = 1;
@@ -80,7 +97,8 @@ export function columnToIndexInContext(str: string, startIndex: number, column: 
 // 'afterCode' is the GRAPHEME_BREAK_Xxx value for the following codepoint.
 export function shouldJoin(beforeState: number, afterInfo: number): number {
     let beforeCode = (beforeState & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
-    let afterCode = (afterInfo & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
+    let afterCode = infoToCode(afterInfo);
+    let afterInCB = (afterInfo & INCB_MASK) >> INCB_SHIFT;
     if (_shouldJoin(beforeCode, afterCode)) {
         if (afterCode === GRAPHEME_BREAK_Regional_Indicator)
             return GRAPHEME_BREAK_SAW_Regional_Pair;
@@ -91,17 +109,28 @@ export function shouldJoin(beforeState: number, afterInfo: number): number {
             if (afterCode === GRAPHEME_BREAK_ZWJ)
                 return GRAPHEME_BREAK_ExtPic_ZWJ + 16;
         }
+        if (afterInCB === INCB_Linker
+            || (afterInCB === INCB_Extend
+                && beforeCode === GRAPHEME_BREAK_InCB_Linker))
+            return GRAPHEME_BREAK_InCB_Linker + 16;
         return afterCode + 16;
-    } else
+    } else if (afterInCB === INCB_Linker)
+        return GRAPHEME_BREAK_InCB_Linker - 16;
+    else
         return afterCode - 16;
 }
 
 export function shouldJoinBackwards(beforeInfo: number, afterState: number): number {
     let afterCode = (afterState & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
-    let beforeCode = (beforeInfo & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
+    let beforeCode = infoToCode(beforeInfo);
+    let beforeInCB = (beforeInfo & INCB_MASK) >> INCB_SHIFT;
     // Looking backwards we can't see what precedes a ZWJ,
     // so assume the ExtPic Extend* that GB11 requires.
-    if (_shouldJoin(beforeCode === GRAPHEME_BREAK_ZWJ ? GRAPHEME_BREAK_ExtPic_ZWJ : beforeCode,
+    // Nor can we see if an InCB=Extend follows an InCB=Linker,
+    // so GB9c only joins an InCB=Linker directly before an InCB=Consonant.
+    if (_shouldJoin(beforeCode === GRAPHEME_BREAK_ZWJ ? GRAPHEME_BREAK_ExtPic_ZWJ
+                    : beforeInCB === INCB_Linker ? GRAPHEME_BREAK_InCB_Linker
+                    : beforeCode,
                     afterCode)) {
         if (beforeCode === GRAPHEME_BREAK_Regional_Indicator)
             return GRAPHEME_BREAK_SAW_Regional_Pair;
@@ -109,6 +138,14 @@ export function shouldJoinBackwards(beforeInfo: number, afterState: number): num
             return beforeCode + 16;
     } else
         return beforeCode - 16;
+}
+
+// The GRAPHEME_BREAK_Xxx value of a code point, except that an
+// InCB=Consonant is GRAPHEME_BREAK_InCB_Consonant (for rule GB9c).
+function infoToCode(info: number): number {
+    if ((info & INCB_MASK) >> INCB_SHIFT === INCB_Consonant)
+        return GRAPHEME_BREAK_InCB_Consonant;
+    return (info & GRAPHEME_BREAK_MASK) >> GRAPHEME_BREAK_SHIFT;
 }
 
 /** Doesn't handle an odd number of RI characters. */
@@ -135,6 +172,9 @@ function _shouldJoin(beforeCode: number, afterCode: number): boolean {
         || afterCode == GRAPHEME_BREAK_ZWJ
         || beforeCode == GRAPHEME_BREAK_Prepend // GB9a
         || afterCode == GRAPHEME_BREAK_SpacingMark) // GB9b
+        return true;
+    if (beforeCode == GRAPHEME_BREAK_InCB_Linker // GB9c
+        && afterCode == GRAPHEME_BREAK_InCB_Consonant)
         return true;
     if (beforeCode == GRAPHEME_BREAK_ExtPic_ZWJ // GB11
         && afterCode == GRAPHEME_BREAK_ExtPic)

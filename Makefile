@@ -1,4 +1,4 @@
-UNICODE_VERSION=15.0.0
+UNICODE_VERSION=18.0.0
 NODE = node
 
 all: out-ts/uc-properties.ts out/uc-properties.js out/unicode-trie/index.mjs out/unicode-trie/swap.mjs out/tiny-inflate/index.mjs out-ts/tiny-inflate.ts out-ts/unicode-trie.ts

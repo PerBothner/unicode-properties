@@ -11,11 +11,13 @@ node_modules/unicode-trie/index.js node_modules/unicode-trie/swap.js node_module
 	npm install
 
 out-ts/uc-properties.ts: out/dirs.stamp src/generate.js src/uc-logic.ts \
-  data/GraphemeBreakProperty.txt data/emoji-data.txt data/EastAsianWidth.txt
+  data/GraphemeBreakProperty.txt data/emoji-data.txt data/EastAsianWidth.txt \
+  data/DerivedCoreProperties.txt
 	$(NODE) src/generate.js --typescript
 
 out/uc-properties.js: out/dirs.stamp src/generate.js src/uc-logic.ts \
-  data/GraphemeBreakProperty.txt data/emoji-data.txt data/EastAsianWidth.txt
+  data/GraphemeBreakProperty.txt data/emoji-data.txt data/EastAsianWidth.txt \
+  data/DerivedCoreProperties.txt
 	$(NODE) src/generate.js
 
 out/unicode-trie/index.mjs: out/dirs.stamp node_modules/unicode-trie/index.js
@@ -47,3 +49,7 @@ data/emoji-data.txt:
 data/EastAsianWidth.txt:
 	mkdir -p data
 	wget -O $@ "https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/EastAsianWidth.txt"
+
+data/DerivedCoreProperties.txt:
+	mkdir -p data
+	wget -O $@ "https://www.unicode.org/Public/$(UNICODE_VERSION)/ucd/DerivedCoreProperties.txt"
